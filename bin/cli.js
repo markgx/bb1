@@ -2,6 +2,7 @@
 
 const BB1 = require('..');
 const readline = require('readline');
+const parseArgs = require('minimist');
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -11,9 +12,17 @@ const rl = readline.createInterface({
 const version = require('../package.json').version;
 
 class CLI {
-  constructor() {
+  constructor(args) {
     console.log(`bb1 v.${version}`);
     this.bb1 = new BB1();
+
+    if (args.c) {
+      const config = require(args.c);
+
+      if (config.loadFunctions) {
+        this.loadFunctions(config.loadFunctions);
+      }
+    }
   }
 
   run() {
@@ -33,6 +42,15 @@ class CLI {
       }).then(() => { this.readLine(); });
     });
   }
+
+  loadFunctions(loadArray) {
+    for (const toLoad of loadArray) {
+      if (toLoad.file) {
+        this.bb1.registerFunctionFromFile(toLoad.file);
+      }
+    }
+  }
 }
 
-new CLI().run();
+const argv = parseArgs(process.argv.slice(2));
+new CLI(argv).run();
